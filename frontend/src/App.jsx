@@ -6,6 +6,7 @@ import StudentDashboard from './pages/StudentDashboard'
 import LeaveApply from './pages/LeaveApply'
 import TeacherDashboard from './pages/TeacherDashboard'
 import Register from './pages/Register'
+import AdminDashboard from './pages/AdminDashboard'
 import RequireAuth from './components/RequireAuth'
 import './styles.css'
 
@@ -49,6 +50,7 @@ export default function App(){
               {role==='Student' && <Link to="/apply">Apply Leave</Link>}
               {(role==='Faculty' || role==='HOD') && <Link to="/teacher">Approvals</Link>}
               <Link to="/">History</Link>
+              {role==='Admin' && <Link to="/admin">Admin</Link>}
             </div>
             <div>
               <input className="search" placeholder="Search students, leaves..." />
@@ -81,6 +83,7 @@ export default function App(){
           <Route path="/apply" element={<LeaveApply/>} />
           <Route path="/register" element={<Register/>} />
           <Route path="/teacher" element={<RequireAuth><TeacherDashboard/></RequireAuth>} />
+          <Route path="/admin" element={<RequireAuth><AdminDashboard/></RequireAuth>} />
         </Routes>
       </div>
     </div>

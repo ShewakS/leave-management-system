@@ -32,11 +32,18 @@ router.post('/register', [
     if (user) return res.status(400).json({ msg: 'User exists' });
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(password, salt);
-    user = new User({ name, email, password: hashed, role, department, rollNo });
+    // Newly created users are inactive by default; Admin must activate.
+    // Exception: when creating an Admin account, activate immediately so they can manage others.
+    const isAdmin = role === 'Admin';
+    user = new User({ name, email, password: hashed, role, department, rollNo, isActive: isAdmin });
     await user.save();
-    const payload = { user: { id: user._id, role: user.role } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '12h' });
-    res.json({ token });
+    if (isAdmin) {
+      const payload = { user: { id: user._id, role: user.role } };
+      const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '12h' });
+      return res.json({ token, msg: 'Admin account created.' });
+    }
+    // Non-admin must wait for activation
+    res.json({ msg: 'Account created. Waiting for admin activation.' });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -54,6 +61,7 @@ router.post('/login', [
     if (isBlockedEmail(email)) return res.status(403).json({ msg: 'Login using demo/test account is disabled' });
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: 'Invalid credentials' });
+    if (!user.isActive) return res.status(403).json({ msg: 'Account is not active. Contact admin.' });
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ msg: 'Invalid credentials' });
     const payload = { user: { id: user._id, role: user.role } };

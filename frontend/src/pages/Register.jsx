@@ -14,12 +14,17 @@ export default function Register(){
     e.preventDefault();
     try{
       const res = await axios.post('/api/auth/register', { name, email, password, role });
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('role', role);
-      setMsg('Account created');
-  // Navigate to teacher approvals for non-students
-  if (role === 'Student') navigate('/');
-  else { navigate('/teacher'); window.location.reload(); }
+      // Admin accounts get token immediately; others wait for activation
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('role', role);
+        setMsg(res.data.msg || 'Account created');
+        if (role === 'Admin') { navigate('/admin'); window.location.reload(); }
+        else if (role === 'Student') navigate('/');
+        else { navigate('/teacher'); window.location.reload(); }
+      } else {
+        setMsg(res.data.msg || 'Account created. Wait for admin activation.');
+      }
     } catch(err){
       setMsg(err.response?.data?.msg || 'Error');
     }
@@ -34,6 +39,7 @@ export default function Register(){
           <option>Student</option>
           <option>Faculty</option>
           <option>HOD</option>
+          <option>Admin</option>
         </select>
         <label className="muted">Name</label>
         <input value={name} onChange={e=>setName(e.target.value)} />

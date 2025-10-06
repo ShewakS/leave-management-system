@@ -41,6 +41,7 @@ export default function Login(){
           <option>Student</option>
           <option>Faculty</option>
           <option>HOD</option>
+          <option>Admin</option>
         </select>
 
         <label className="muted">Email</label>

@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['Student','Faculty','HOD','Admin'], default: 'Student' },
   department: { type: String },
   rollNo: { type: String },
+  isActive: { type: Boolean, default: false },
   leaveQuota: { type: Map, of: Number, default: {} }, // e.g., {Medical: 10, Personal:5}
   createdAt: { type: Date, default: Date.now }
 });
